@@ -1,6 +1,6 @@
-#nginx-setup-role
+## nginx-setup-role
 
-#Prerequisites:
+## Prerequisites:
  Public key of control-host's user already added to managed's /root/.ssh/ directory
  Managed host OS is Ubuntu Server
 
@@ -10,6 +10,6 @@ Web creds are:
 * aaa/ ->  usera:a-pass
 * bbb/ ->  userb:b-pass
 
-#Run:
+## Run:
 
 ansible-playbook nginx-setup.yml -i inventory --ask-vault-pass -u root
