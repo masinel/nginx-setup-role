@@ -7,7 +7,6 @@
  Vault pass is '12345'
  Web creds are:
                 aaa/ ->  usera:a-pass
-                
                 bbb/ ->  userb:b-pass
 # Run:
 
