@@ -1,0 +1,7 @@
+---
+http_host: "vaulted-nginx"
+http_conf: "vaulted-nginx.conf"
+http_port: "80"
+www_data_dir: "/var/www"
+document_root: "/var/www/html"
+local_wwwroot_path: "files/www-content"

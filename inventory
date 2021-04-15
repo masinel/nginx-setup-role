@@ -1,0 +1,5 @@
+[nginx_servers]
+nginx_host ansible_host=192.168.149.200
+
+[nginx_servers:vars]
+ansible_python_interpreter=/usr/bin/python3 

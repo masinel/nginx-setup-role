@@ -1,0 +1,29 @@
+server {
+        listen {{ http_port }};
+        root {{ document_root }};
+        index index.html index.htm index.nginx-debian.html;
+        server_name {{ http_host }};
+
+        location / {
+                try_files $uri $uri/ =404;
+        }
+		
+		location /aaa/ {
+                try_files $uri $uri/ =404;
+				
+				auth_basic "Restricted-AAA";
+				auth_basic_user_file {{ document_root }}/aaa/.htpasswd;
+        }
+		
+		location /bbb/ {
+                try_files $uri $uri/ =404;
+				
+				auth_basic "Restricted-BBB";
+				auth_basic_user_file {{ document_root }}/bbb/.htpasswd;
+        }
+		
+
+        location ~ /\.ht {
+                deny all;
+        }
+} 

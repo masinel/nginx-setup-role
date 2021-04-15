@@ -1,0 +1,113 @@
+##################################################
+# Simple nginx setup
+##################################################
+---
+    - name: Install Prerequisites
+      apt: name={{ item }} update_cache=yes state=latest force_apt_get=yes
+      loop: [ 'aptitude' ]
+
+    - name: Install NGINX Packages
+      apt: name={{ item }} update_cache=yes state=latest
+      loop: [ 'nginx' ]
+    
+# Nginx Configuration
+    - name: Sets Nginx conf file
+      template:
+        src: "nginx.conf.j2"
+        dest: "/etc/nginx/sites-available/{{ http_conf }}"
+
+    - name: Enables new site
+      file:
+        src: "/etc/nginx/sites-available/{{ http_conf }}"
+        dest: "/etc/nginx/sites-enabled/{{ http_conf }}"
+        state: link
+      notify: Reload Nginx
+    
+    - name: Removes "default" site
+      file:
+        path: "/etc/nginx/sites-enabled/default"
+        state: absent
+      notify: Reload Nginx
+      
+    - name: Rsync local www-content files to the remote server
+      synchronize:
+        src: "{{ local_wwwroot_path }}/"
+        dest: "{{ document_root }}"
+        rsync_opts:
+          - "--no-motd" 
+          
+    - name: Recursive chown to www-data:www-data
+      file:    
+        path: "{{ document_root }}"
+        owner: www-data
+        group: www-data
+        recurse: yes
+    
+# Recursively set directories to 0775 in {{ www_data_dir }}
+#   - name: Evaluating www_data dirs    
+#     find:    
+#       path: "{{ www_data_dir }}"    
+#       file_type: "directory"
+#       recurse: yes
+#     register: datadirs    
+#  
+#   # This returns the actual dir-path's 
+#   - set_fact: 
+#       www_datadirs: "{{ datadirs.files | map(attribute='path') | list }}"           
+#  
+#   - name: Changing permissions of {{ www_data_dir }}/* directories
+#     file:    
+#       path: "{{ item }}"  
+#       mode: 0775  
+#       owner: www-data
+#       group: www-data
+#     with_items:    
+#       - "{{ www_datadirs }}"
+    
+    
+# Recursively set files to 0664 in {{ www_data_dir }}
+#   - name: Evaluating www_data files    
+#     find:    
+#       path: "{{ www_data_dir }}"    
+#       file_type: "file"
+#       recurse: yes
+#     register: datafiles    
+#  
+#   # This returns the actual file-path's 
+#   - set_fact: 
+#       www_datafiles: "{{ datafiles.files | map(attribute='path') | list }}"           
+#  
+#   - name: Changing permissions of {{ www_data_dir }}/* files
+#     file:    
+#       path: "{{ item }}"  
+#       mode: 0664
+#       owner: www-data
+#       group: www-data        
+#     with_items:    
+#       - "{{ www_datafiles }}"
+    
+    - name: Add first user from vault to a password file and ensure permissions are set
+      htpasswd:
+        path: "{{ document_root }}/aaa/.htpasswd"
+        name: usera
+        password: '{{ www_pass_a }}'
+        owner: root
+        group: www-data
+        mode: 0640
+        
+    - name: Add second user from vault to a password file and ensure permissions are set
+      htpasswd:
+        path: "{{ document_root }}/bbb/.htpasswd"
+        name: '{{ www_user_b }}'
+        password: '{{ www_pass_b }}'
+        owner: root
+        group: www-data
+        mode: 0640
+
+# UFW Configuration
+    - name: "UFW - Allow HTTP on port {{ http_port }}"
+      ufw:
+        rule: allow
+        port: "{{ http_port }}"
+        proto: tcp
+ 

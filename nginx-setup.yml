@@ -1,0 +1,11 @@
+---
+- hosts: all
+  become: true
+  
+  vars_files:
+    - vars/www-creds.yml
+  
+  roles:
+    - { role: setup_ubuntu, tags: ['server'] }
+
+    - { role: setup_nginx, tags: ['nginx', 'web', 'http'] }
